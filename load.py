@@ -1,6 +1,8 @@
 from pyglet.gl import *
 import levelData
-from collisionRectangle import CollisionRectangle
+from collisionObject import CollisionObject
+from shapes import Rectangle
+from shapes import Circle
 from visualRectangle import VisualRectangle
 from entity import Entity
 from vector2D import Vector2D
@@ -17,12 +19,11 @@ def LoadLevelData(screen):
     
     currentScreen = screen
     
-    levelData.collisionRectangles.clear()
+    levelData.collisionObjects.clear()
     levelData.backgroundTiles.clear()
     levelData.foregroundTiles.clear()
     levelData.entities.clear()
     
-    print("Loading data for level: " + currentScreen)
     scale = levelData.windowWidth / levelData.gridWidth
     
     currentCommand = ""
@@ -64,14 +65,20 @@ def LoadLevelData(screen):
                 entityTypeName = entityType.name
                 pos = Vector2D(int(entityData[2]), int(entityData[3]))
                 if entityTypeName == "exit":
-                    levelData.collisionRectangles.append(CollisionRectangle(pos, levelData.tileSize, levelData.tileSize, "exit"))
-                    levelData.collisionRectangles[len(levelData.collisionRectangles) - 1].SetAttributes(attributes)
+                    levelData.collisionObjects.append(CollisionObject(Rectangle(pos, levelData.tileSize, levelData.tileSize), "exit"))
+                    levelData.collisionObjects[len(levelData.collisionObjects) - 1].SetAttributes(attributes)
                 if entityTypeName == "playerStart":
-                    #an entity of type playerStart should only be added if gameStart hasn't been set to true yet
+                    #only set player's starting position if gameStart hasn't been set to true yet
                     if not gameStart:
                         levelData.player.position = pos
                         gameStart = True
-                levelData.entities.append(Entity(entityType, pos.x, pos.y, False, attributes))
+                if entityTypeName == "mine":
+                    mineEntity = (Entity(entityType, pos.x, pos.y, True))
+                    mineEntity.image = entityType.image
+                    mineCollObj = CollisionObject(Circle(pos, 32), "mine")
+                    mineCollObj.parentEntity = mineEntity
+                    mineEntity.collisionObj = mineCollObj
+                    levelData.entities.append(mineEntity)
         else:
             cellIndex = 0
             if currentCommand == "bgTiles":
@@ -81,7 +88,6 @@ def LoadLevelData(screen):
                     pos *= scale
                     if (int(word)) != 0:
                         image = tileTypeData.GetTileTypeByID(int(word)).image
-                        levelData.collisionRectangles.append(CollisionRectangle(pos, levelData.tileSize, levelData.tileSize, "water"))
                         levelData.backgroundTiles.append(VisualRectangle(pos, image))
                     cellIndex += 1
             if currentCommand == "fgTiles":
@@ -91,7 +97,6 @@ def LoadLevelData(screen):
                     pos *= scale
                     if (int(word)) != 0:
                         image = tileTypeData.GetTileTypeByID(int(word)).image
-                        levelData.collisionRectangles.append(CollisionRectangle(pos, levelData.tileSize, levelData.tileSize, "water"))
                         levelData.foregroundTiles.append(VisualRectangle(pos, image))
                     cellIndex += 1
             if currentCommand == "wallTiles":
@@ -101,7 +106,7 @@ def LoadLevelData(screen):
                     pos *= scale
                     if (int(word)) != 0:
                         image = tileTypeData.GetTileTypeByID(int(word)).image
-                        levelData.collisionRectangles.append(CollisionRectangle(pos, levelData.tileSize, levelData.tileSize, "wall"))
+                        levelData.collisionObjects.append(CollisionObject(Rectangle(pos, levelData.tileSize, levelData.tileSize), "wall"))
                         levelData.backgroundTiles.append(VisualRectangle(pos, image))
                     cellIndex += 1
                 currentCommand = ""

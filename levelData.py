@@ -19,7 +19,7 @@ playerSpeed = 5.0
 
 scale = 0
 
-collisionRectangles = []
+collisionObjects = []
 backgroundTiles = []
 foregroundTiles = []
 

@@ -63,3 +63,11 @@ class Vector2D:
     
     def Length(self):
         return math.sqrt(self.x * self.x + self.y * self.y)
+    
+    def Bounce(self, normal):
+        t = Dot(self, normal) * -2.0
+        self.x += normal.x * t
+        self.y += normal.y * t
+
+def Dot(a, b):
+    return a.x * b.x + a.y * b.y

@@ -10,7 +10,11 @@ def LoadEntityTypes():
         for word in line.split():
             entityData.append(word)
         if len(entityData) == 3:
-            entityTypes.append(EntityType(int(entityData[0]), entityData[2]))
+            entityType = EntityType(int(entityData[0]), entityData[2])
+            #if image filename to be used, set image to it
+            if entityData[1] != "none":
+                entityType.image = imageUtil.LoadImage("images/" + entityData[1], True)
+            entityTypes.append(entityType)
     f.close()
     
 def GetEntityTypeByID(id):

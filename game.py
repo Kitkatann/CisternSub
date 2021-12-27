@@ -5,7 +5,6 @@ from pyglet.gl import *
 from pyglet import clock
 from pyglet.media import StaticSource
 from vector2D import Vector2D
-from enum import Enum
 import imageUtil
 import levelData
 import load
@@ -29,15 +28,15 @@ def LoadSound(filename):
     return StaticSource(pyglet.media.load(filename))
 
 #load error tile image
-errorImage = imageUtil.LoadImage('images/errorImage.png')
+errorImage = imageUtil.LoadImage('images/errorImage.png', False)
 
 
 #player images
-playerImageMap = {"RIGHT": imageUtil.LoadImage('images/playerRight.png'),
-                    "LEFT": imageUtil.LoadImage('images/playerLeft.png')}
+playerImageMap = {"RIGHT": imageUtil.LoadImage('images/playerRight.png', False),
+                    "LEFT": imageUtil.LoadImage('images/playerLeft.png', False)}
                     
 #background image
-background = imageUtil.LoadImage('images/background.png')
+background = imageUtil.LoadImage('images/background.png', False)
 
 #load sounds
 
@@ -66,6 +65,11 @@ def on_draw():
     #draw foreground level tiles
     for i in levelData.foregroundTiles:
         imageUtil.DrawImage(i.image, i.position.x, i.position.y)
+        
+    #draw entities
+    for entity in levelData.entities:
+        if entity.image is not None:
+            imageUtil.DrawImage(entity.image, entity.x, entity.y)
     
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
@@ -95,6 +99,8 @@ def on_key_release(symbol, modifiers):
     elif symbol == key.DOWN:
         keysDown["DOWN"] = False
 
+playerCollisionResults = []
+
 def Update(dt):
     targetVel = Vector2D(0, 0)
     if keysDown["UP"]:
@@ -108,9 +114,29 @@ def Update(dt):
     
     levelData.player.velocity += targetVel
     
-    #check all collisions
-    for c in levelData.collisionRectangles:
-        c.PlayerCollisionUpdate(levelData.player)
+    playerCollisionResults.clear()
+    #store all active collision contacts in list
+    for c in levelData.collisionObjects:
+        c.GenerateContact(levelData.player.collisionObj, playerCollisionResults)
+    for e in levelData.entities:
+        if e.active and e.collisionObj is not None:
+            e.collisionObj.GenerateContact(levelData.player.collisionObj, playerCollisionResults)
+    
+    #find the collision result with the largest depth
+    largestDepth = 0.0
+    largestDepthItem = None
+    for r in playerCollisionResults:
+        if r.depth > largestDepth:
+            largestDepth = r.depth
+            largestDepthItem = r
+    
+    #call player's collide method on collision result with largest depth
+    if largestDepthItem is not None:
+        levelData.player.Collide(largestDepthItem)
+    
+    #delete inactive entities
+    levelData.entities = [e for e in levelData.entities if e.active]
+            
         
     if levelData.player.active:
         levelData.player.Update(dt)
