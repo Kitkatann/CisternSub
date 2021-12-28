@@ -18,12 +18,14 @@ class Player:
         self.height = 35
 
     def Collide(self, collResult):
-        if collResult.objA.collisionType == "wall":
+        if collResult.objA.collisionType == "wall" or collResult.objA.collisionType == "gate":
             self.CollideWithWall(collResult)
         if collResult.objA.collisionType == "exit":
             self.CollideWithExit(collResult)
         if collResult.objA.collisionType == "mine":
             self.CollideWithMine(collResult)
+        if collResult.objA.collisionType == "switch":
+            self.CollideWithSwitch(collResult)
     
     def CollideWithWall(self, collResult):
         self.position += collResult.normal * collResult.depth
@@ -33,14 +35,14 @@ class Player:
     
     def CollideWithExit(self, collResult):
         collisionObj = collResult.objA
-        load.LoadLevelData(collisionObj.exitScreen)
-        if collisionObj.exitDirection == "up":
+        load.LoadLevelData(collisionObj.parentEntity.exitScreen)
+        if collisionObj.parentEntity.exitDirection == "up":
             self.position.y += -levelData.screenHeight + 56
-        elif collisionObj.exitDirection == "right":
+        elif collisionObj.parentEntity.exitDirection == "right":
             self.position.x += -levelData.screenWidth + 56
-        elif collisionObj.exitDirection == "down":
+        elif collisionObj.parentEntity.exitDirection == "down":
             self.position.y += levelData.screenHeight - 56
-        elif collisionObj.exitDirection == "left":
+        elif collisionObj.parentEntity.exitDirection == "left":
             self.position.x += levelData.screenWidth - 56
         
     def CollideWithMine(self, collResult):
@@ -55,6 +57,15 @@ class Player:
         #bouncy
         self.velocity.Bounce(collResult.normal)
 
+    def CollideWithSwitch(self, collResult):
+        #change switch state
+        collisionObj = collResult.objA
+        switchEntity = collisionObj.parentEntity
+        switchEntity.switchState = not switchEntity.switchState
+        
+        #bounce off switch
+        self.position += collResult.normal * collResult.depth
+        self.velocity.Bounce(collResult.normal)
     
     def Update(self, frameTime):
         if self.active:

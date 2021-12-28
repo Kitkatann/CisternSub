@@ -65,15 +65,23 @@ def LoadLevelData(screen):
                 entityTypeName = entityType.name
                 pos = Vector2D(float(entityData[2]), float(entityData[3]))
                 if entityTypeName == "exit":
-                    levelData.collisionObjects.append(CollisionObject(Rectangle(pos, levelData.tileSize, levelData.tileSize), "exit"))
-                    levelData.collisionObjects[len(levelData.collisionObjects) - 1].SetAttributes(attributes)
+                    #exit entity format: <entity> <entityTypeID> <x> <y> <linked screen> <direction>
+                    #add entity of type exit with a collision object at specified position
+                    exitEntity = Entity(entityType, pos.x, pos.y, True)
+                    exitCollObj = CollisionObject(Rectangle(pos, levelData.tileSize, levelData.tileSize), "exit")
+                    exitCollObj.parentEntity = exitEntity
+                    exitEntity.collisionObj = exitCollObj
+                    exitEntity.SetAttributes(attributes)
+                    levelData.entities.append(exitEntity)
                 if entityTypeName == "playerStart":
                     #only set player's starting position if gameStart hasn't been set to true yet
+                    #not an entity
                     if not gameStart:
                         levelData.player.position = pos
                         gameStart = True
                 if entityTypeName == "mine":
-                    mineEntity = (Entity(entityType, pos.x, pos.y, True))
+                    #add entity of type mine with a collision object at specified position
+                    mineEntity = Entity(entityType, pos.x, pos.y, True)
                     mineEntity.image = entityType.image
                     mineCollObj = CollisionObject(Circle(pos, 32), "mine")
                     mineCollObj.parentEntity = mineEntity

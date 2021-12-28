@@ -137,11 +137,10 @@ def Update(dt):
     #delete inactive entities
     levelData.entities = [e for e in levelData.entities if e.active]
             
-        
+    #update player
     if levelData.player.active:
         levelData.player.Update(dt)
-    
-
+        
 
 pyglet.clock.schedule_interval(Update, 1/60.0)
 pyglet.app.run()
