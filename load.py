@@ -63,7 +63,7 @@ def LoadLevelData(screen):
                     attributes = " ".join(entityData[4:])
                 entityType = entityTypeData.GetEntityTypeByID(int(entityData[1]))
                 entityTypeName = entityType.name
-                pos = Vector2D(int(entityData[2]), int(entityData[3]))
+                pos = Vector2D(float(entityData[2]), float(entityData[3]))
                 if entityTypeName == "exit":
                     levelData.collisionObjects.append(CollisionObject(Rectangle(pos, levelData.tileSize, levelData.tileSize), "exit"))
                     levelData.collisionObjects[len(levelData.collisionObjects) - 1].SetAttributes(attributes)
@@ -107,7 +107,7 @@ def LoadLevelData(screen):
                     if (int(word)) != 0:
                         image = tileTypeData.GetTileTypeByID(int(word)).image
                         levelData.collisionObjects.append(CollisionObject(Rectangle(pos, levelData.tileSize, levelData.tileSize), "wall"))
-                        levelData.backgroundTiles.append(VisualRectangle(pos, image))
+                        levelData.foregroundTiles.append(VisualRectangle(pos, image))
                     cellIndex += 1
                 currentCommand = ""
     f.close()
